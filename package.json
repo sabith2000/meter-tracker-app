@@ -1,20 +1,12 @@
 {
   "name": "meter-tracker",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Full stack electricity meter tracking application",
+  "main": "server/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm install --prefix server && npm install --prefix client && npm run build --prefix client",
+    "start": "npm start --prefix server"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/sabith2000/meter-tracker-app.git"
-  },
-  "keywords": [],
   "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/sabith2000/meter-tracker-app/issues"
-  },
-  "homepage": "https://github.com/sabith2000/meter-tracker-app#readme",
-  "description": ""
+  "license": "ISC"
 }
