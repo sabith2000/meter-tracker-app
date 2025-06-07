@@ -11,8 +11,8 @@ const {
 } = require('../controllers/readingController');
 
 router.route('/')
-  .post(addReading)
-  .get(getAllReadings);
+  .get(getAllReadings)
+  .post(addReading);
 
 router.route('/action/delete-all-globally')
     .delete(deleteAllReadingsGlobally);

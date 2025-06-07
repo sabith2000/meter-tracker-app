@@ -10,8 +10,8 @@ const {
 } = require('../controllers/slabRateController');
 
 router.route('/')
-    .post(addSlabRateConfig)
-    .get(getSlabRateConfigs);
+    .get(getSlabRateConfigs)
+    .post(addSlabRateConfig);
 
 router.route('/active')
     .get(getActiveSlabRateConfig);
