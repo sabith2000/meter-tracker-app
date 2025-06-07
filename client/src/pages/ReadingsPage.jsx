@@ -35,14 +35,14 @@ function ReadingsPage() {
     try {
       setLoading(true);
       setError(null);
-      setDeleteError(null); 
-      setDeleteAllError(null); 
+      setDeleteError(null);
+      setDeleteAllError(null);
       setDeleteAllSuccess('');
 
       const params = {
         page: page,
         limit: readingsPerPage,
-        sort: '-date', 
+        sort: '-date',
         ...(appliedFilters.meterId && { meterId: appliedFilters.meterId }),
         ...(appliedFilters.startDate && { startDate: appliedFilters.startDate }),
         ...(appliedFilters.endDate && { endDate: appliedFilters.endDate }),
@@ -72,35 +72,35 @@ function ReadingsPage() {
   }, []);
 
   useEffect(() => {
-    const currentFilters = { 
-        meterId: filterMeterId, 
-        startDate: filterStartDate, 
-        endDate: filterEndDate 
+    const currentFilters = {
+      meterId: filterMeterId,
+      startDate: filterStartDate,
+      endDate: filterEndDate
     };
     fetchReadings(currentPage, currentFilters);
-    
+
     if (availableMeters.length === 0) {
-        fetchMeters();
+      fetchMeters();
     }
   }, [fetchReadings, currentPage, filterMeterId, filterStartDate, filterEndDate, fetchMeters, availableMeters.length]);
 
   const handleReadingAdded = () => {
     setShowAddForm(false);
-    setCurrentPage(1); 
+    setCurrentPage(1);
     fetchReadings(1, { meterId: filterMeterId, startDate: filterStartDate, endDate: filterEndDate });
   };
-  
+
   const handleClearFilters = () => {
     setFilterMeterId('');
     setFilterStartDate('');
     setFilterEndDate('');
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const openDeleteConfirm = (reading) => {
     setReadingToDelete(reading);
     setShowDeleteConfirm(true);
-    setDeleteError(null); 
+    setDeleteError(null);
   };
 
   const closeDeleteConfirm = () => {
@@ -115,15 +115,15 @@ function ReadingsPage() {
     try {
       await apiClient.delete(`/readings/${readingToDelete._id}`);
       closeDeleteConfirm();
-      const currentFilters = { 
-          meterId: filterMeterId, 
-          startDate: filterStartDate, 
-          endDate: filterEndDate 
+      const currentFilters = {
+        meterId: filterMeterId,
+        startDate: filterStartDate,
+        endDate: filterEndDate
       };
       if (readings.length === 1 && currentPage > 1) {
-          setCurrentPage(prev => prev - 1); 
+        setCurrentPage(prev => prev - 1);
       } else {
-          fetchReadings(currentPage, currentFilters);
+        fetchReadings(currentPage, currentFilters);
       }
     } catch (err) {
       console.error("Error deleting reading:", err);
@@ -182,9 +182,9 @@ function ReadingsPage() {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleString('en-IN', {
-        year: 'numeric', month: 'short', day: 'numeric',
-        hour: '2-digit', minute: '2-digit', hour12: true,
-        timeZone: 'Asia/Kolkata'
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true,
+      timeZone: 'Asia/Kolkata'
     });
   };
 
@@ -192,7 +192,7 @@ function ReadingsPage() {
     <div className="p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Meter Readings</h1>
-        <button 
+        <button
           className="w-full sm:w-auto flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow transition-colors duration-150"
           onClick={() => setShowAddForm(!showAddForm)}
         >
@@ -207,7 +207,7 @@ function ReadingsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div className="w-full">
             <label htmlFor="filterMeter" className="block text-sm font-medium text-gray-700 mb-1">Meter</label>
-            <select id="filterMeter" value={filterMeterId} onChange={(e) => {setFilterMeterId(e.target.value); setCurrentPage(1);}}
+            <select id="filterMeter" value={filterMeterId} onChange={(e) => { setFilterMeterId(e.target.value); setCurrentPage(1); }}
               className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
               <option value="">All Meters</option>
@@ -216,13 +216,13 @@ function ReadingsPage() {
           </div>
           <div className="w-full">
             <label htmlFor="filterStartDate" className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-            <input type="date" id="filterStartDate" value={filterStartDate} onChange={(e) => {setFilterStartDate(e.target.value); setCurrentPage(1);}}
+            <input type="date" id="filterStartDate" value={filterStartDate} onChange={(e) => { setFilterStartDate(e.target.value); setCurrentPage(1); }}
               className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
           <div className="w-full">
             <label htmlFor="filterEndDate" className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-            <input type="date" id="filterEndDate" value={filterEndDate} onChange={(e) => {setFilterEndDate(e.target.value); setCurrentPage(1);}}
+            <input type="date" id="filterEndDate" value={filterEndDate} onChange={(e) => { setFilterEndDate(e.target.value); setCurrentPage(1); }}
               className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
@@ -233,26 +233,27 @@ function ReadingsPage() {
           </div>
         </div>
       </div>
-      
+
       {deleteError && <div className="mb-4 p-3 text-sm text-red-700 bg-red-100 rounded-md">Error: {deleteError}</div>}
       {deleteAllSuccess && <div className="my-4 p-3 text-sm text-green-700 bg-green-100 rounded-md">{deleteAllSuccess}</div>}
       {deleteAllError && !showDeleteAllConfirm && <div className="my-4 p-3 text-sm text-red-700 bg-red-100 rounded-md">Error: {deleteAllError}</div>}
-      
+
       <div className="my-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-md shadow">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-            <div>
-                <h3 className="text-lg font-semibold text-red-700">Danger Zone</h3>
-                <p className="text-sm text-red-600">Permanently delete all meter readings from the database.</p>
-            </div>
-            <button onClick={openDeleteAllConfirmModal} className="w-full mt-2 sm:mt-0 sm:w-auto flex-shrink-0 bg-red-600 hover:bg-red-800 text-white font-semibold py-2 px-4 rounded shadow" disabled={totalReadings === 0}>
-                Delete ALL Readings
-            </button>
+          <div>
+            <h3 className="text-lg font-semibold text-red-700">Danger Zone</h3>
+            <p className="text-sm text-red-600">Permanently delete all meter readings from the database.</p>
+          </div>
+          <button onClick={openDeleteAllConfirmModal} className="w-full mt-2 sm:mt-0 sm:w-auto flex-shrink-0 bg-red-600 hover:bg-red-800 text-white font-semibold py-2 px-4 rounded shadow" disabled={totalReadings === 0}>
+            Delete ALL Readings
+          </button>
         </div>
       </div>
-      
-      {loading && !readings.length ? ( <div className="p-6 text-center"><p className="text-lg text-gray-600">Loading readings...</p></div>
-      ) : error ? ( <div className="p-6 text-center"><p className="text-lg text-red-600">Error: {error}</p></div>
-      ) : readings.length === 0 ? ( <p className="text-gray-600 text-center py-4">No readings found for the selected criteria.</p>
+
+      {/* --- MODIFIED: Added Array.isArray() check --- */}
+      {loading && !Array.isArray(readings) ? (<div className="p-6 text-center"><p className="text-lg text-gray-600">Loading readings...</p></div>
+      ) : error ? (<div className="p-6 text-center"><p className="text-lg text-red-600">Error: {error}</p></div>
+      ) : !Array.isArray(readings) || readings.length === 0 ? (<p className="text-gray-600 text-center py-4">No readings found for the selected criteria.</p>
       ) : (
         <>
           <div className="shadow-md rounded-lg overflow-x-auto bg-white">
@@ -284,7 +285,7 @@ function ReadingsPage() {
             </table>
           </div>
 
-          {totalPages > 1 && ( 
+          {totalPages > 1 && (
             <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
               <button onClick={handlePreviousPage} disabled={currentPage === 1 || loading}
                 className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"

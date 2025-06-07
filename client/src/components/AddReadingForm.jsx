@@ -102,7 +102,7 @@ function AddReadingForm({ onReadingAdded, availableMeters }) {
             required
           >
             <option value="" disabled>Select a meter</option>
-            {availableMeters && availableMeters.map((meter) => (
+            {Array.isArray(availableMeters) && availableMeters.map((meter) => (
               <option key={meter._id} value={meter._id}>
                 {meter.name} ({meter.meterType})
               </option>
