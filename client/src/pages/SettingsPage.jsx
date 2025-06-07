@@ -1,7 +1,7 @@
 // meter-tracker/client/src/pages/SettingsPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import apiClient from '../services/api';
-import { toast } from 'react-toastify'; // Import toast
+import { toast } from 'react-toastify';
 
 const getCurrentDateString = () => {
   const now = new Date();
@@ -71,9 +71,11 @@ function SettingsPage() {
       const response = await apiClient.get('/meters');
       const allMeters = response.data || [];
       setMeters(allMeters);
+      // --- THE FIX ---
       const gpMeters = Array.isArray(allMeters) ? allMeters.filter(meter => meter.isGeneralPurpose) : [];
       setGeneralPurposeMeters(gpMeters);
-      const currentActiveGPMeter = gpMeters.find(meter => meter.isCurrentlyActiveGeneral);
+      // --- THE FIX ---
+      const currentActiveGPMeter = Array.isArray(gpMeters) ? gpMeters.find(meter => meter.isCurrentlyActiveGeneral) : null;
       if (currentActiveGPMeter) setSelectedActiveMeterId(currentActiveGPMeter._id);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to fetch meters.');
@@ -85,8 +87,10 @@ function SettingsPage() {
       setLoadingSlabs(true);
       const response = await apiClient.get('/slabs');
       const allSlabs = response.data || [];
+      // --- THE FIX ---
       setSlabConfigs(Array.isArray(allSlabs) ? allSlabs : []);
-      const currentActiveSlab = allSlabs.find(sc => sc.isCurrentlyActive);
+      // --- THE FIX ---
+      const currentActiveSlab = Array.isArray(allSlabs) ? allSlabs.find(sc => sc.isCurrentlyActive) : null;
       if (currentActiveSlab) setSelectedActiveSlabConfigId(currentActiveSlab._id);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to fetch slab configs.');
@@ -213,12 +217,12 @@ function SettingsPage() {
       <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
         <h2 className="text-xl sm:text-2xl font-semibold text-slate-700 mb-1">Active General Purpose Meter</h2>
         <p className="text-sm text-gray-500 mb-4">Select which general purpose meter is currently in use.</p>
-        {/* --- MODIFIED: Added Array.isArray() check --- */}
+        {/* --- THE FIX --- */}
         {Array.isArray(generalPurposeMeters) && generalPurposeMeters.length > 0 ? (
           <div className="space-y-3">
             {generalPurposeMeters.map((meter) => (
               <label key={meter._id} className="flex items-center p-3 border rounded-md hover:bg-gray-50 cursor-pointer has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-400">
-                <input type="radio" name="activeGeneralMeter" value={meter._id} checked={selectedActiveMeterId === meter._id} onChange={() => handleActiveMeterChange(meter._id)} className="h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500" />
+                <input type="radio" name="activeGeneralMeter" value={meter._id} checked={selectedActiveMeterId === meter._id} onChange={() => handleActiveMeterChange(meter._id)} className="h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500"/>
                 <span className="ml-3 text-gray-800 font-medium">{meter.name}</span><span className="ml-2 text-sm text-gray-500">({meter.meterType})</span>
                 {meter.isCurrentlyActiveGeneral && (<span className="ml-auto text-xs font-semibold py-0.5 px-2 bg-green-200 text-green-800 rounded-full">Currently Active</span>)}
               </label>
@@ -234,39 +238,40 @@ function SettingsPage() {
 
       <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-semibold text-slate-700 mb-1">Slab Rate Configurations</h2>
-            <p className="text-sm text-gray-500">Manage electricity tariff structures.</p>
-          </div>
-          <button
-            onClick={() => {
-              setShowAddSlabForm(!showAddSlabForm);
-              if (!showAddSlabForm) {
-                setNewConfigName(''); setNewEffectiveDate(getCurrentDateString());
-                setNewLte500Slabs([{ id: generateSlabRuleId(), fromUnit: '', toUnit: '', rate: '' }]);
-                setNewGt500Slabs([{ id: generateSlabRuleId(), fromUnit: '', toUnit: '', rate: '' }]);
-              }
-            }}
-            className={`w-full sm:w-auto flex-shrink-0 px-4 py-2 text-sm font-medium rounded-md shadow whitespace-nowrap ${showAddSlabForm ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-green-500 hover:bg-green-600 text-white'}`}
-          >
-            {showAddSlabForm ? 'Cancel Adding Slab' : '+ Add New Slab Configuration'}
-          </button>
+            <div>
+                <h2 className="text-xl sm:text-2xl font-semibold text-slate-700 mb-1">Slab Rate Configurations</h2>
+                <p className="text-sm text-gray-500">Manage electricity tariff structures.</p>
+            </div>
+            <button 
+                onClick={() => {
+                    setShowAddSlabForm(!showAddSlabForm);
+                    if (!showAddSlabForm) { 
+                        setNewConfigName(''); setNewEffectiveDate(getCurrentDateString());
+                        setNewLte500Slabs([{ id: generateSlabRuleId(), fromUnit: '', toUnit: '', rate: '' }]);
+                        setNewGt500Slabs([{ id: generateSlabRuleId(), fromUnit: '', toUnit: '', rate: '' }]);
+                    }
+                }}
+                className={`w-full sm:w-auto flex-shrink-0 px-4 py-2 text-sm font-medium rounded-md shadow whitespace-nowrap ${showAddSlabForm ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-green-500 hover:bg-green-600 text-white'}`}
+            >
+                {showAddSlabForm ? 'Cancel Adding Slab' : '+ Add New Slab Configuration'}
+            </button>
         </div>
         {showAddSlabForm && (
           <form onSubmit={handleAddNewSlabConfig} className="my-6 p-4 border border-dashed border-gray-300 rounded-lg space-y-6 bg-slate-50">
             <h3 className="text-lg sm:text-xl font-semibold text-slate-600 border-b pb-2">New Slab Configuration Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="newConfigName" className="block text-sm font-medium text-gray-700 mb-1">Name <span className="text-red-500">*</span></label>
-                <input type="text" id="newConfigName" value={newConfigName} onChange={(e) => setNewConfigName(e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md text-sm" required />
-              </div>
-              <div>
-                <label htmlFor="newEffectiveDate" className="block text-sm font-medium text-gray-700 mb-1">Effective Date <span className="text-red-500">*</span></label>
-                <input type="date" id="newEffectiveDate" value={newEffectiveDate} onChange={(e) => setNewEffectiveDate(e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md text-sm" required />
-              </div>
+                <div>
+                    <label htmlFor="newConfigName" className="block text-sm font-medium text-gray-700 mb-1">Name <span className="text-red-500">*</span></label>
+                    <input type="text" id="newConfigName" value={newConfigName} onChange={(e) => setNewConfigName(e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md text-sm" required />
+                </div>
+                <div>
+                    <label htmlFor="newEffectiveDate" className="block text-sm font-medium text-gray-700 mb-1">Effective Date <span className="text-red-500">*</span></label>
+                    <input type="date" id="newEffectiveDate" value={newEffectiveDate} onChange={(e) => setNewEffectiveDate(e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md text-sm" required />
+                </div>
             </div>
             <div>
               <h4 className="text-base sm:text-md font-semibold text-slate-600 mb-2">Slabs for Consumption &le; 500 Units</h4>
+              {/* --- THE FIX --- */}
               {Array.isArray(newLte500Slabs) && newLte500Slabs.map((slab, index) => (
                 <SlabRuleInputs key={slab.id} slab={slab} index={index} onChange={handleSlabRuleChange} onRemove={removeSlabRule} category="lte500" />
               ))}
@@ -274,6 +279,7 @@ function SettingsPage() {
             </div>
             <div>
               <h4 className="text-base sm:text-md font-semibold text-slate-600 mb-2">Slabs for Consumption &gt; 500 Units</h4>
+              {/* --- THE FIX --- */}
               {Array.isArray(newGt500Slabs) && newGt500Slabs.map((slab, index) => (
                 <SlabRuleInputs key={slab.id} slab={slab} index={index} onChange={handleSlabRuleChange} onRemove={removeSlabRule} category="gt500" />
               ))}
@@ -286,41 +292,41 @@ function SettingsPage() {
             </div>
           </form>
         )}
-
-        {/* --- MODIFIED: Added Array.isArray() check --- */}
+        
+        {/* --- THE FIX --- */}
         {Array.isArray(slabConfigs) && slabConfigs.length > 0 && !showAddSlabForm ? (
-          <div className="space-y-3 mt-6 border-t pt-6">
-            <h3 className="text-base sm:text-lg font-semibold text-slate-600 mb-2">Activate Existing Configuration</h3>
-            {slabConfigs.map(config => (
-              <div key={config._id} className={`p-3 border rounded-md ${selectedActiveSlabConfigId === config._id ? 'bg-indigo-50 border-indigo-300' : 'hover:bg-gray-50'}`}>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                  <label className="flex items-center cursor-pointer flex-grow mr-2">
-                    <input type="radio" name="activeSlabConfig" value={config._id} checked={selectedActiveSlabConfigId === config._id} onChange={() => handleActiveSlabConfigChange(config._id)} className="h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 flex-shrink-0" />
-                    <div className="ml-3">
-                      <span className="text-sm sm:text-base text-gray-800 font-medium">{config.configName}</span>
-                      <span className="block text-xs sm:text-sm text-gray-500">Effective Date: {formatDate(config.effectiveDate)}</span>
+            <div className="space-y-3 mt-6 border-t pt-6">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-600 mb-2">Activate Existing Configuration</h3>
+                {slabConfigs.map(config => (
+                    <div key={config._id} className={`p-3 border rounded-md ${selectedActiveSlabConfigId === config._id ? 'bg-indigo-50 border-indigo-300' : 'hover:bg-gray-50'}`}>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                            <label className="flex items-center cursor-pointer flex-grow mr-2">
+                                <input type="radio" name="activeSlabConfig" value={config._id} checked={selectedActiveSlabConfigId === config._id} onChange={() => handleActiveSlabConfigChange(config._id)} className="h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 flex-shrink-0"/>
+                                <div className="ml-3">
+                                    <span className="text-sm sm:text-base text-gray-800 font-medium">{config.configName}</span>
+                                    <span className="block text-xs sm:text-sm text-gray-500">Effective Date: {formatDate(config.effectiveDate)}</span>
+                                </div>
+                            </label>
+                            <div className="flex items-center self-end sm:self-center w-full sm:w-auto mt-2 sm:mt-0">
+                                {config.isCurrentlyActive && (<span className="text-xs font-semibold py-0.5 px-2 bg-green-200 text-green-800 rounded-full whitespace-nowrap ml-auto">Currently Active</span>)}
+                                {!config.isCurrentlyActive && (
+                                    <button onClick={() => openDeleteSlabConfirmModal(config)} className="ml-auto px-3 py-1 text-xs font-medium text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 rounded-md transition-colors whitespace-nowrap" title={`Delete ${config.configName}`}>
+                                        Delete
+                                    </button>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                  </label>
-                  <div className="flex items-center self-end sm:self-center w-full sm:w-auto mt-2 sm:mt-0">
-                    {config.isCurrentlyActive && (<span className="text-xs font-semibold py-0.5 px-2 bg-green-200 text-green-800 rounded-full whitespace-nowrap ml-auto">Currently Active</span>)}
-                    {!config.isCurrentlyActive && (
-                      <button onClick={() => openDeleteSlabConfirmModal(config)} className="ml-auto px-3 py-1 text-xs font-medium text-red-500 hover:text-red-700 border border-red-200 hover:border-red-400 rounded-md transition-colors whitespace-nowrap" title={`Delete ${config.configName}`}>
-                        Delete
-                      </button>
-                    )}
-                  </div>
+                ))}
+                 <div className="mt-6">
+                    <button onClick={handleSaveActiveSlabConfig} disabled={isUpdatingSlab || !selectedActiveSlabConfigId || (slabConfigs.find(sc => sc._id === selectedActiveSlabConfigId)?.isCurrentlyActive)} className="w-full sm:w-auto px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow disabled:opacity-50 disabled:cursor-not-allowed">
+                        {isUpdatingSlab ? 'Activating...' : 'Set Selected Slabs as Active'}
+                    </button>
                 </div>
-              </div>
-            ))}
-            <div className="mt-6">
-              <button onClick={handleSaveActiveSlabConfig} disabled={isUpdatingSlab || !selectedActiveSlabConfigId || (slabConfigs.find(sc => sc._id === selectedActiveSlabConfigId)?.isCurrentlyActive)} className="w-full sm:w-auto px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow disabled:opacity-50 disabled:cursor-not-allowed">
-                {isUpdatingSlab ? 'Activating...' : 'Set Selected Slabs as Active'}
-              </button>
             </div>
-          </div>
         ) : !showAddSlabForm && (<p className="text-gray-600 mt-4">No slab rate configurations found.</p>)}
       </div>
-
+      
       {showDeleteSlabConfirm && slabConfigToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75" aria-labelledby="modal-title" role="dialog" aria-modal="true">
           <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">

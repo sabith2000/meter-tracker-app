@@ -121,7 +121,7 @@ function DashboardPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-6"> {/* Adjusted padding for small screens */}
+    <div className="p-4 sm:p-6 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Dashboard</h1>
         {dashboardData?.currentBillingCycle?.status === 'active' && (
@@ -206,41 +206,40 @@ function DashboardPage() {
             </div>
           )}
 
-          {dashboardData.meterSummaries && (
-            <div className="space-y-4">
-              <h2 className="text-xl sm:text-2xl font-semibold text-slate-700 mt-6 mb-3">Meter Details</h2>
-              {Array.isArray(dashboardData.meterSummaries) && dashboardData.meterSummaries.length > 0 ? (
-                dashboardData.meterSummaries.map((meter) => (
-                  <div key={meter.meterId} className="bg-white shadow-md rounded-lg p-4 border border-gray-200">
-                    <h3 className="text-lg sm:text-xl font-semibold text-indigo-700">{meter.meterName} <span className="text-xs sm:text-sm text-gray-500">({meter.meterType})</span></h3>
-                    {meter.isGeneralPurpose && (
-                      <p className={`text-xs my-1 font-semibold py-0.5 px-2 inline-block rounded-full ${meter.isCurrentlyActiveGeneral ? 'bg-green-200 text-green-800' : 'bg-amber-200 text-amber-800'}`}>
-                        {meter.isCurrentlyActiveGeneral ? 'ACTIVE General Meter' : 'INACTIVE General Meter'}
-                      </p>
-                    )}
-                    {/* Responsive grid for meter details */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3 text-xs sm:text-sm">
-                      <p>Consumption: <span className="font-semibold">{meter.currentCycleConsumption} units</span></p>
-                      <p>Est. Cost: <span className="font-semibold">{formatCurrency(meter.currentCycleCost)}</span></p>
-                      <p>Avg. Daily Use: <span className="font-semibold">{meter.averageDailyConsumption} units/day</span></p>
-                      <p>Prev. Cycle Use: <span className="font-semibold">{meter.previousCycleConsumption} units</span></p>
-                      {meter.unitsRemainingTo500 !== null && (
-                        <>
-                          <p>Units to 500: <span className="font-semibold">{meter.unitsRemainingTo500} units</span></p>
-                          <p>% to 500: <span className="font-semibold">{meter.percentageTo500}%</span></p>
-                          <div className="col-span-full mt-1"> {/* Progress bar spans full width available in its context */}
-                            <div className="w-full bg-gray-200 rounded-full h-2.5">
-                              <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${meter.percentageTo500 > 100 ? 100 : meter.percentageTo500}%` }}></div>
-                            </div>
+          {/* This block contains the .map() call we need to fix */}
+          <div className="space-y-4">
+            <h2 className="text-xl sm:text-2xl font-semibold text-slate-700 mt-6 mb-3">Meter Details</h2>
+            {/* --- THE FIX --- */}
+            {Array.isArray(dashboardData.meterSummaries) && dashboardData.meterSummaries.length > 0 ? (
+              dashboardData.meterSummaries.map((meter) => (
+                <div key={meter.meterId} className="bg-white shadow-md rounded-lg p-4 border border-gray-200">
+                  <h3 className="text-lg sm:text-xl font-semibold text-indigo-700">{meter.meterName} <span className="text-xs sm:text-sm text-gray-500">({meter.meterType})</span></h3>
+                  {meter.isGeneralPurpose && (
+                    <p className={`text-xs my-1 font-semibold py-0.5 px-2 inline-block rounded-full ${meter.isCurrentlyActiveGeneral ? 'bg-green-200 text-green-800' : 'bg-amber-200 text-amber-800'}`}>
+                      {meter.isCurrentlyActiveGeneral ? 'ACTIVE General Meter' : 'INACTIVE General Meter'}
+                    </p>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3 text-xs sm:text-sm">
+                    <p>Consumption: <span className="font-semibold">{meter.currentCycleConsumption} units</span></p>
+                    <p>Est. Cost: <span className="font-semibold">{formatCurrency(meter.currentCycleCost)}</span></p>
+                    <p>Avg. Daily Use: <span className="font-semibold">{meter.averageDailyConsumption} units/day</span></p>
+                    <p>Prev. Cycle Use: <span className="font-semibold">{meter.previousCycleConsumption} units</span></p>
+                    {meter.unitsRemainingTo500 !== null && (
+                      <>
+                        <p>Units to 500: <span className="font-semibold">{meter.unitsRemainingTo500} units</span></p>
+                        <p>% to 500: <span className="font-semibold">{meter.percentageTo500}%</span></p>
+                        <div className="col-span-full mt-1">
+                          <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${meter.percentageTo500 > 100 ? 100 : meter.percentageTo500}%` }}></div>
                           </div>
-                        </>
-                      )}
-                    </div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                ))
-              ) : (<p className="text-sm text-gray-600">No meter data available for summary.</p>)}
-            </div>
-          )}
+                </div>
+              ))
+            ) : (<p className="text-sm text-gray-600">No meter data available for summary.</p>)}
+          </div>
         </>
       )}
     </div>

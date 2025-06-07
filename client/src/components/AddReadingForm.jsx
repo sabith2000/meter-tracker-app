@@ -15,7 +15,6 @@ const getCurrentLocalDateTimeString = () => {
 
 function AddReadingForm({ onReadingAdded, availableMeters }) {
   const [meterId, setMeterId] = useState('');
-  // MODIFIED: Default to current local date and time for datetime-local input
   const [date, setDate] = useState(getCurrentLocalDateTimeString()); 
   const [readingValue, setReadingValue] = useState('');
   const [notes, setNotes] = useState('');
@@ -25,7 +24,8 @@ function AddReadingForm({ onReadingAdded, availableMeters }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!meterId && availableMeters && availableMeters.length > 0) {
+    // MODIFIED: Added Array.isArray() check for robustness
+    if (!meterId && Array.isArray(availableMeters) && availableMeters.length > 0) {
       setMeterId(availableMeters[0]._id);
     }
   }, [availableMeters, meterId]);
@@ -46,7 +46,7 @@ function AddReadingForm({ onReadingAdded, availableMeters }) {
         setIsSubmitting(false);
         return;
     }
-    if (!date) { // Should not happen with datetime-local if required, but good check
+    if (!date) {
         setError('Please enter a valid date and time for the reading.');
         setIsSubmitting(false);
         return;
@@ -55,8 +55,6 @@ function AddReadingForm({ onReadingAdded, availableMeters }) {
     try {
       const readingData = {
         meterId,
-        // IMPORTANT: Convert the local datetime string from the input to a full Date object,
-        // then to ISOString (which will be UTC) for the backend.
         date: new Date(date).toISOString(), 
         readingValue: parseFloat(readingValue),
         notes,
@@ -65,12 +63,6 @@ function AddReadingForm({ onReadingAdded, availableMeters }) {
       await apiClient.post('/readings', readingData);
       setSuccessMessage('Reading added successfully!');
       
-      // Reset form fields
-      // setReadingValue(''); // Optionally keep for quick re-entry
-      // setNotes('');
-      // setIsEstimated(false);
-      // setDate(getCurrentLocalDateTimeString()); // Reset date to current time after successful submission
-
       if (onReadingAdded) {
         onReadingAdded(); 
       }
@@ -102,6 +94,7 @@ function AddReadingForm({ onReadingAdded, availableMeters }) {
             required
           >
             <option value="" disabled>Select a meter</option>
+            {/* --- THE FIX --- */}
             {Array.isArray(availableMeters) && availableMeters.map((meter) => (
               <option key={meter._id} value={meter._id}>
                 {meter.name} ({meter.meterType})
@@ -115,7 +108,6 @@ function AddReadingForm({ onReadingAdded, availableMeters }) {
             Date and Time of Reading
           </label>
           <input
-            // MODIFIED: Changed type to datetime-local
             type="datetime-local" 
             id="date"
             name="date"
@@ -137,7 +129,7 @@ function AddReadingForm({ onReadingAdded, availableMeters }) {
             value={readingValue}
             onChange={(e) => setReadingValue(e.target.value)}
             placeholder="e.g., 12345.6"
-            step="any" // Allow any decimal for flexibility
+            step="any"
             className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             required
           />
