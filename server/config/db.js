@@ -1,23 +1,50 @@
-// meter-tracker/config/db.js
+// meter-tracker/server/config/db.js
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
-// Load environment variables (if not already loaded by server.js, good for standalone scripts too)
 dotenv.config();
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      // These options are good defaults but might change with Mongoose versions
-      // Mongoose 6+ generally doesn't require these explicitly
-      // useNewUrlParser: true,
-      // useUnifiedTopology: true,
+    const mongoURI = process.env.MONGODB_URI;
+
+    // --- NEW DETAILED LOGGING ---
+    console.log("-----------------------------------------");
+    console.log("DATABASE CONNECTION ATTEMPT");
+
+    if (!mongoURI) {
+      console.error("FATAL ERROR: MONGODB_URI environment variable is NOT SET on Render.");
+      process.exit(1); // Stop the server if the URI is missing
+    }
+
+    // Log a censored version of the URI to check for obvious format errors
+    // It replaces the password with '****'
+    const censoredURI = mongoURI.replace(/:([^:]+)@/, ':****@');
+    console.log(`Attempting to connect with URI: ${censoredURI}`);
+
+    // Set up listeners for connection events BEFORE connecting
+    mongoose.connection.on('connecting', () => {
+        console.log('Mongoose Status: Connecting...');
     });
-    console.log('MongoDB Connected...');
+    mongoose.connection.on('connected', () => {
+        console.log('Mongoose Status: Connection SUCCESSFUL.');
+    });
+    mongoose.connection.on('error', (err) => {
+        // This will catch errors after initial connection
+        console.error('Mongoose Status: Connection ERROR after initial connection.', err);
+    });
+    mongoose.connection.on('disconnected', () => {
+        console.log('Mongoose Status: Disconnected.');
+    });
+    // --- END OF NEW LOGGING ---
+
+
+    await mongoose.connect(mongoURI);
+
   } catch (err) {
-    console.error('MongoDB Connection Error:', err.message);
-    // Exit process with failure
-    process.exit(1);
+    // This will catch errors during the initial connect() attempt
+    console.error('FATAL ERROR during initial mongoose.connect():', err);
+    process.exit(1); // Stop the server on critical connection failure
   }
 };
 
