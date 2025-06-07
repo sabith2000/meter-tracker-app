@@ -16,11 +16,9 @@ router.route('/')
 router.route('/active')
     .get(getActiveSlabRateConfig);
 
-// Route for activating a specific slab config
 router.route('/:id/activate')
    .put(setActiveSlabRateConfig);
 
-// Route for deleting a specific slab config
 router.route('/:id')
    .delete(deleteSlabRateConfig);
 

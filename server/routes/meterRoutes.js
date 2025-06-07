@@ -1,4 +1,4 @@
-// meter-tracker/routes/meterRoutes.js
+// meter-tracker/server/routes/meterRoutes.js
 const express = require('express');
 const router = express.Router();
 const {

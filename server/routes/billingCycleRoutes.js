@@ -1,4 +1,4 @@
-// meter-tracker/routes/billingCycleRoutes.js
+// meter-tracker/server/routes/billingCycleRoutes.js
 const express = require('express');
 const router = express.Router();
 const {
@@ -11,19 +11,19 @@ const {
 } = require('../controllers/billingCycleController');
 
 router.route('/')
-  .get(getAllBillingCycles); // Get all cycles
+  .get(getAllBillingCycles);
 
 router.route('/start')
-  .post(startNewBillingCycle); // Manually start a new cycle
+  .post(startNewBillingCycle);
 
 router.route('/close-current')
-  .post(closeCurrentBillingCycle); // Close current active and start new
+  .post(closeCurrentBillingCycle);
 
 router.route('/active')
-  .get(getActiveBillingCycle); // Get the currently active cycle
+  .get(getActiveBillingCycle);
 
 router.route('/:id')
-  .get(getBillingCycleById)    // Get specific cycle by ID
-  .put(updateBillingCycle);    // Update specific cycle by ID
+  .get(getBillingCycleById)
+  .put(updateBillingCycle);
 
 module.exports = router;
