@@ -6,7 +6,7 @@ const {
     getSlabRateConfigs,
     getActiveSlabRateConfig,
     setActiveSlabRateConfig,
-    deleteSlabRateConfig // Import the new controller function
+    deleteSlabRateConfig
 } = require('../controllers/slabRateController');
 
 router.route('/')
@@ -16,11 +16,12 @@ router.route('/')
 router.route('/active')
     .get(getActiveSlabRateConfig);
 
+// Route for activating a specific slab config
 router.route('/:id/activate')
    .put(setActiveSlabRateConfig);
 
-// --- NEW ROUTE for Deleting ---
+// Route for deleting a specific slab config
 router.route('/:id')
-   .delete(deleteSlabRateConfig); // Add this line for DELETE request to /api/slabs/:id
+   .delete(deleteSlabRateConfig);
 
 module.exports = router;
