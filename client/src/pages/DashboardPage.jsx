@@ -1,6 +1,7 @@
 // meter-tracker/client/src/pages/DashboardPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import apiClient from '../services/api';
+import { toast } from 'react-toastify';
 
 // Helper functions
 const formatDate = (dateString) => {
@@ -37,8 +38,6 @@ function DashboardPage() {
   const [notesForClosedCycle, setNotesForClosedCycle] = useState('');
   const [notesForNewCycle, setNotesForNewCycle] = useState('');
   const [isClosingCycle, setIsClosingCycle] = useState(false);
-  const [closeCycleError, setCloseCycleError] = useState(null);
-  const [closeCycleSuccess, setCloseCycleSuccess] = useState('');
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -48,7 +47,9 @@ function DashboardPage() {
       setDashboardData(response.data);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
-      setError(err.response?.data?.message || err.message || 'Failed to fetch dashboard summary.');
+      const errorMessage = err.response?.data?.message || 'Failed to fetch dashboard summary.';
+      setError(errorMessage);
+      toast.error(errorMessage);
       setDashboardData(null);
     } finally {
       setLoading(false);
@@ -62,11 +63,9 @@ function DashboardPage() {
   const handleCloseCycleSubmit = async (e) => {
     e.preventDefault();
     setIsClosingCycle(true);
-    setCloseCycleError(null);
-    setCloseCycleSuccess('');
 
     if (!governmentCollectionDate) {
-      setCloseCycleError("Government Collection Date is required.");
+      toast.warn("Government Collection Date is required.");
       setIsClosingCycle(false);
       return;
     }
@@ -74,12 +73,12 @@ function DashboardPage() {
     const currentDateObj = new Date(todayFormattedForInput());
 
     if (collectionDateObj > currentDateObj) {
-      setCloseCycleError("Government Collection Date cannot be in the future.");
+      toast.warn("Government Collection Date cannot be in the future.");
       setIsClosingCycle(false);
       return;
     }
     if (dashboardData?.currentBillingCycle?.startDate && collectionDateObj < new Date(dashboardData.currentBillingCycle.startDate)) {
-      setCloseCycleError("Collection Date cannot be before the current cycle's start date.");
+      toast.warn("Collection Date cannot be before the current cycle's start date.");
       setIsClosingCycle(false);
       return;
     }
@@ -91,7 +90,7 @@ function DashboardPage() {
         notesForNewCycle
       };
       const response = await apiClient.post('/billing-cycles/close-current', payload);
-      setCloseCycleSuccess(response.data.message || 'Billing cycle closed and new one started successfully!');
+      toast.success(response.data.message || 'Billing cycle closed and new one started successfully!');
       setShowCloseCycleForm(false);
       setGovernmentCollectionDate(todayFormattedForInput());
       setNotesForClosedCycle('');
@@ -99,7 +98,7 @@ function DashboardPage() {
       fetchDashboardData();
     } catch (err) {
       console.error("Error closing billing cycle:", err);
-      setCloseCycleError(err.response?.data?.message || err.message || 'Failed to close billing cycle.');
+      toast.error(err.response?.data?.message || 'Failed to close billing cycle.');
     } finally {
       setIsClosingCycle(false);
     }
@@ -127,24 +126,18 @@ function DashboardPage() {
         {dashboardData?.currentBillingCycle?.status === 'active' && (
           <button
             onClick={() => {
-              setShowCloseCycleForm(true); setCloseCycleError(null); setCloseCycleSuccess('');
-              setGovernmentCollectionDate(todayFormattedForInput());
-              setNotesForClosedCycle(''); setNotesForNewCycle('');
+              setShowCloseCycleForm(true);
             }}
-            className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded shadow whitespace-nowrap"
+            className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded shadow whitespace-nowrap transition-colors duration-200"
           >
             Close Current Billing Cycle
           </button>
         )}
       </div>
-      {error && <div className="mb-4 p-3 text-sm text-red-700 bg-red-100 rounded-md">Data Refresh Error: {error} <button onClick={fetchDashboardData} className="ml-2 px-2 py-0.5 bg-red-200 text-red-800 rounded text-xs hover:bg-red-300">Retry</button></div>}
-
+      
       {showCloseCycleForm && (
         <div className="my-6 p-4 sm:p-6 bg-white shadow-xl rounded-lg border border-red-300">
           <h2 className="text-xl sm:text-2xl font-semibold text-slate-700 mb-4">Close Current Billing Cycle</h2>
-          {closeCycleSuccess && <div className="mb-4 p-3 text-sm text-green-700 bg-green-100 rounded-md">{closeCycleSuccess}</div>}
-          {closeCycleError && <div className="mb-4 p-3 text-sm text-red-700 bg-red-100 rounded-md">{closeCycleError}</div>}
-
           <form onSubmit={handleCloseCycleSubmit} className="space-y-4">
             <div>
               <label htmlFor="governmentCollectionDate" className="block text-sm font-medium text-gray-700 mb-1">
@@ -168,10 +161,10 @@ function DashboardPage() {
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-3">
               <button type="button" onClick={() => setShowCloseCycleForm(false)}
-                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
               >Cancel</button>
               <button type="submit" disabled={isClosingCycle}
-                className="w-full sm:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                className="w-full sm:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-colors duration-200"
               > {isClosingCycle ? 'Processing...' : 'Confirm & Close Cycle'} </button>
             </div>
           </form>
@@ -181,7 +174,7 @@ function DashboardPage() {
       {dashboardData && (
         <>
           {dashboardData.currentBillingCycle && (
-            <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <div className="bg-white shadow-md rounded-lg p-4 sm:p-6 transition-shadow duration-200 hover:shadow-lg">
               <h2 className="text-xl sm:text-2xl font-semibold text-slate-700 mb-3">Current Billing Cycle</h2>
               <p className="text-sm sm:text-base text-gray-700">Starts: <span className="font-medium">{formatDate(dashboardData.currentBillingCycle.startDate)}</span></p>
               <p className="text-sm sm:text-base text-gray-700">Status: <span className="font-medium capitalize">{dashboardData.currentBillingCycle.status}</span></p>
@@ -191,7 +184,7 @@ function DashboardPage() {
           )}
 
           {dashboardData.previousBillingCycle && (
-            <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <div className="bg-white shadow-md rounded-lg p-4 sm:p-6 transition-shadow duration-200 hover:shadow-lg">
               <h3 className="text-lg sm:text-xl font-semibold text-slate-700 mb-2">Previous Billing Cycle</h3>
               <p className="text-sm sm:text-base text-gray-700">Period: <span className="font-medium">{formatDate(dashboardData.previousBillingCycle.startDate)}</span> - <span className="font-medium">{formatDate(dashboardData.previousBillingCycle.endDate)}</span></p>
               {dashboardData.previousBillingCycle.notes && (<p className="text-xs sm:text-sm text-gray-500 mt-1">Notes: {dashboardData.previousBillingCycle.notes}</p>)}
@@ -199,20 +192,19 @@ function DashboardPage() {
           )}
 
           {dashboardData.currentCycleTotalBill !== undefined && (
-            <div className="bg-sky-100 border-l-4 border-sky-500 text-sky-700 p-4 rounded-md shadow">
+            <div className="bg-sky-100 border-l-4 border-sky-500 text-sky-700 p-4 rounded-md shadow transition-shadow duration-200 hover:shadow-lg">
               <h2 className="text-xl sm:text-2xl font-semibold mb-2">Cycle Summary</h2>
               <p className="text-lg sm:text-xl">Total Estimated Bill (Current Cycle): <span className="font-bold">{formatCurrency(dashboardData.currentCycleTotalBill)}</span></p>
               {dashboardData.activeSlabConfiguration && (<p className="text-xs sm:text-sm mt-1">Using rates: {dashboardData.activeSlabConfiguration.configName}</p>)}
             </div>
           )}
 
-          {/* This block contains the .map() call we need to fix */}
           <div className="space-y-4">
             <h2 className="text-xl sm:text-2xl font-semibold text-slate-700 mt-6 mb-3">Meter Details</h2>
             {/* --- THE FIX --- */}
             {Array.isArray(dashboardData.meterSummaries) && dashboardData.meterSummaries.length > 0 ? (
               dashboardData.meterSummaries.map((meter) => (
-                <div key={meter.meterId} className="bg-white shadow-md rounded-lg p-4 border border-gray-200">
+                <div key={meter.meterId} className="bg-white shadow-md rounded-lg p-4 border border-gray-200 transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-[1.02]">
                   <h3 className="text-lg sm:text-xl font-semibold text-indigo-700">{meter.meterName} <span className="text-xs sm:text-sm text-gray-500">({meter.meterType})</span></h3>
                   {meter.isGeneralPurpose && (
                     <p className={`text-xs my-1 font-semibold py-0.5 px-2 inline-block rounded-full ${meter.isCurrentlyActiveGeneral ? 'bg-green-200 text-green-800' : 'bg-amber-200 text-amber-800'}`}>
