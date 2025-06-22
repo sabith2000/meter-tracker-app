@@ -1,10 +1,10 @@
 # TrackMyWatts by LMS
 
-![TrackMyWatts Logo](client/public/logo.svg)
+![TrackMyWatts Logo](client/public/logo.png)
 
 TrackMyWatts is a personal, full-stack web application designed to digitize and analyze home electricity consumption. It provides a comprehensive solution for tracking multiple meter readings, managing bi-monthly billing cycles, and calculating costs based on configurable, slab-based tariff structures to help strategize and optimize electricity usage.
 
-**Live Application:** [**https://track-my-watts.onrender.com**](https://track-my-watts.onrender.com) *(<-- Replace this with your actual Render URL!)*
+**Live Application:** [**https://trackmywatts.onrender.com**](https://trackmywatts.onrender.com)
 
 ---
 
