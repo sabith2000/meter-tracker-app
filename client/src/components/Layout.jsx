@@ -81,9 +81,14 @@ function Layout() {
         <Outlet />
       </main>
 
-      {/* --- MODIFIED: Updated Footer --- */}
+       {/* --- MODIFIED: Updated Footer --- */}
       <footer className="bg-slate-200 text-slate-700 text-center p-4 mt-auto">
-        © {new Date().getFullYear()} TrackMyWatts by LMS
+        <div className="flex justify-center items-center gap-4 text-sm">
+            <span>© {new Date().getFullYear()} TrackMyWatts by LMS</span>
+            <span className="text-slate-400">|</span>
+            {/* This will display the version from your client/package.json */}
+            <span>Version {import.meta.env.VITE_APP_VERSION}</span>
+        </div>
       </footer>
     </div>
   );
