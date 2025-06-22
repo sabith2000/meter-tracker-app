@@ -27,7 +27,6 @@ const todayFormattedForInput = () => {
   return `${year}-${month}-${day}`;
 };
 
-
 function DashboardPage() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -46,7 +45,6 @@ function DashboardPage() {
       const response = await apiClient.get('/dashboard/summary');
       setDashboardData(response.data);
     } catch (err) {
-      console.error("Error fetching dashboard data:", err);
       const errorMessage = err.response?.data?.message || 'Failed to fetch dashboard summary.';
       setError(errorMessage);
       toast.error(errorMessage);
@@ -92,12 +90,8 @@ function DashboardPage() {
       const response = await apiClient.post('/billing-cycles/close-current', payload);
       toast.success(response.data.message || 'Billing cycle closed and new one started successfully!');
       setShowCloseCycleForm(false);
-      setGovernmentCollectionDate(todayFormattedForInput());
-      setNotesForClosedCycle('');
-      setNotesForNewCycle('');
       fetchDashboardData();
     } catch (err) {
-      console.error("Error closing billing cycle:", err);
       toast.error(err.response?.data?.message || 'Failed to close billing cycle.');
     } finally {
       setIsClosingCycle(false);
@@ -127,6 +121,9 @@ function DashboardPage() {
           <button
             onClick={() => {
               setShowCloseCycleForm(true);
+              setGovernmentCollectionDate(todayFormattedForInput());
+              setNotesForClosedCycle('');
+              setNotesForNewCycle('');
             }}
             className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded shadow whitespace-nowrap transition-colors duration-200"
           >
@@ -134,7 +131,7 @@ function DashboardPage() {
           </button>
         )}
       </div>
-      
+
       {showCloseCycleForm && (
         <div className="my-6 p-4 sm:p-6 bg-white shadow-xl rounded-lg border border-red-300">
           <h2 className="text-xl sm:text-2xl font-semibold text-slate-700 mb-4">Close Current Billing Cycle</h2>
@@ -201,7 +198,7 @@ function DashboardPage() {
 
           <div className="space-y-4">
             <h2 className="text-xl sm:text-2xl font-semibold text-slate-700 mt-6 mb-3">Meter Details</h2>
-            {/* --- THE FIX --- */}
+            {/* --- THE FIX IS APPLIED HERE --- */}
             {Array.isArray(dashboardData.meterSummaries) && dashboardData.meterSummaries.length > 0 ? (
               dashboardData.meterSummaries.map((meter) => (
                 <div key={meter.meterId} className="bg-white shadow-md rounded-lg p-4 border border-gray-200 transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-[1.02]">
