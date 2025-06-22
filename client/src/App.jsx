@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import DashboardPage from './pages/DashboardPage';
 import ReadingsPage from './pages/ReadingsPage';
 import SettingsPage from './pages/SettingsPage';
+import BillingCyclesPage from './pages/BillingCyclesPage'; // --- NEW IMPORT ---
 
 // --- NEW: Imports for react-toastify ---
 import { ToastContainer } from 'react-toastify';
@@ -18,6 +19,7 @@ function App() {
           <Route index element={<DashboardPage />} />
           <Route path="readings" element={<ReadingsPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="billing-cycles" element={<BillingCyclesPage />} /> {/* --- NEW ROUTE --- */}
         </Route>
       </Routes>
       
