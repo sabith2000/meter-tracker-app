@@ -7,7 +7,8 @@ const {
   getActiveBillingCycle,
   getAllBillingCycles,
   getBillingCycleById,
-  updateBillingCycle
+  updateBillingCycle,
+  deleteBillingCycle // Import the new function
 } = require('../controllers/billingCycleController');
 
 router.route('/')
@@ -24,6 +25,7 @@ router.route('/active')
 
 router.route('/:id')
   .get(getBillingCycleById)
-  .put(updateBillingCycle);
+  .put(updateBillingCycle)
+  .delete(deleteBillingCycle); // Add this line
 
 module.exports = router;

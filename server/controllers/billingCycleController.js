@@ -1,5 +1,6 @@
 // meter-tracker/controllers/billingCycleController.js
 const BillingCycle = require('../models/BillingCycle');
+const Reading = require('../models/Reading');
 const SlabRateConfig = require('../models/SlabRateConfig'); // Needed for slab rate snapshot
 
 // @desc    Start a new billing cycle (manually, or called when an old one closes)
@@ -193,4 +194,32 @@ exports.updateBillingCycle = async (req, res) => {
         console.error('Error updating billing cycle:', error);
         res.status(500).json({ message: 'Server error while updating billing cycle.' });
     }
+};
+
+exports.deleteBillingCycle = async (req, res) => {
+  try {
+    const cycleId = req.params.id;
+    const cycleToDelete = await BillingCycle.findById(cycleId);
+
+    if (!cycleToDelete) {
+      return res.status(404).json({ message: 'Billing cycle not found.' });
+    }
+
+    // IMPORTANT: Check for associated readings before deleting
+    const associatedReadingsCount = await Reading.countDocuments({ billingCycle: cycleId });
+
+    if (associatedReadingsCount > 0) {
+      return res.status(400).json({
+        message: `Cannot delete this billing cycle because it has ${associatedReadingsCount} reading(s) associated with it. Please delete the readings first.`,
+      });
+    }
+
+    await BillingCycle.findByIdAndDelete(cycleId);
+
+    res.status(200).json({ message: 'Billing cycle deleted successfully.' });
+
+  } catch (error) {
+    console.error('Error deleting billing cycle:', error);
+    res.status(500).json({ message: 'Server error while deleting billing cycle.' });
+  }
 };
