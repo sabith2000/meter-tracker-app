@@ -50,6 +50,8 @@ function Layout() {
               </Link>
               {/* --- NEW LINK --- */}
               <Link to="/billing-cycles" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-700 transition-colors">Billing Cycles</Link>
+              {/* --- NEW LINK --- */}
+              <Link to="/analytics" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-700 transition-colors">Analytics</Link>
               <Link to="/settings" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-700 transition-colors">
                 Settings
               </Link>
@@ -91,6 +93,8 @@ function Layout() {
               </Link>
               {/* --- NEW LINK --- */}
               <Link to="/billing-cycles" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700 transition-colors" onClick={closeMobileMenu}>Billing Cycles</Link>
+              {/* --- NEW LINK --- */}
+              <Link to="/analytics" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700" onClick={closeMobileMenu}>Analytics</Link>
               <Link
                 to="/settings"
                 className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700 transition-colors"

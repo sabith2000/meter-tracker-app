@@ -5,37 +5,28 @@ import Layout from './components/Layout';
 import DashboardPage from './pages/DashboardPage';
 import ReadingsPage from './pages/ReadingsPage';
 import SettingsPage from './pages/SettingsPage';
-import BillingCyclesPage from './pages/BillingCyclesPage'; // --- NEW IMPORT ---
+import BillingCyclesPage from './pages/BillingCyclesPage';
+import AnalyticsPage from './pages/AnalyticsPage'; // --- NEW IMPORT ---
 
-// --- NEW: Imports for react-toastify ---
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
-    <> {/* Use a Fragment to wrap Routes and ToastContainer */}
+    <>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<DashboardPage />} />
           <Route path="readings" element={<ReadingsPage />} />
+          <Route path="billing-cycles" element={<BillingCyclesPage />} />
+          <Route path="analytics" element={<AnalyticsPage />} /> {/* --- NEW ROUTE --- */}
           <Route path="settings" element={<SettingsPage />} />
-          <Route path="billing-cycles" element={<BillingCyclesPage />} /> {/* --- NEW ROUTE --- */}
         </Route>
       </Routes>
       
-      {/* --- NEW: ToastContainer component --- */}
-      {/* This component will render all toast notifications */}
       <ToastContainer
-        position="top-right"
-        autoClose={5000} // Close notifications after 5 seconds
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored" // Use "light", "dark", or "colored"
+        position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false}
+        closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored"
       />
     </>
   );
