@@ -1,4 +1,4 @@
-// meter-tracker/server/server.js
+// track-my-watts/server/server.js
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -11,7 +11,8 @@ const meterRoutes = require('./routes/meterRoutes');
 const billingCycleRoutes = require('./routes/billingCycleRoutes');
 const readingRoutes = require('./routes/readingRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
-const analyticsRoutes = require('./routes/analyticsRoutes'); // --- NEW IMPORT ---
+const analyticsRoutes = require('./routes/analyticsRoutes');
+const settingsRoutes = require('./routes/settingsRoutes'); // --- NEW IMPORT ---
 const Meter = require('./models/Meter');
 
 // Load environment variables from .env file
@@ -33,7 +34,8 @@ app.use('/api/meters', meterRoutes);
 app.use('/api/billing-cycles', billingCycleRoutes);
 app.use('/api/readings', readingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/analytics', analyticsRoutes); // --- NEW ROUTE ---
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/settings', settingsRoutes); // --- NEW ROUTE ---
 
 // Serve Frontend in Production
 if (process.env.NODE_ENV === 'production') {
@@ -50,5 +52,4 @@ const PORT = process.env.PORT || 5001;
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  // Canary test can be removed if desired, but is harmless to keep for now.
 });
