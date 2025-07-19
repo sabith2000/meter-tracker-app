@@ -1,11 +1,20 @@
+// track-my-watts/client/tailwind.config.js
 /** @type {import('tailwindcss').Config} */
+import defaultTheme from 'tailwindcss/defaultTheme';
+
 export default {
+  darkMode: 'class',
   content: [
-    "./index.html", // The main HTML file
-    "./src/**/*.{js,ts,jsx,tsx}", // All JS, TS, JSX, TSX files in the src folder and its subfolders
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      // NEW: Setting 'Inter' as the default font family
+      fontFamily: {
+        sans: ['Inter', ...defaultTheme.fontFamily.sans],
+      },
+    },
   },
   plugins: [],
 }
