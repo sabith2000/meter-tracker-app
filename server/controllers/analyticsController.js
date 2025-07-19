@@ -1,4 +1,4 @@
-// meter-tracker/server/controllers/analyticsController.js
+// track-my-watts/server/controllers/analyticsController.js
 const Reading = require('../models/Reading');
 const BillingCycle = require('../models/BillingCycle');
 const SlabRateConfig = require('../models/SlabRateConfig');
@@ -24,68 +24,28 @@ function calculateCostForConsumption(consumedUnits, slabConfig) {
     return parseFloat(totalCost.toFixed(2));
 }
 
-// @desc    Get analytics data grouped by billing cycle
+// @desc    Get analytics data grouped by billing cycle (for the first chart)
 // @route   GET /api/analytics/cycle-summary
 exports.getCycleSummary = async (req, res) => {
     try {
         console.log("Fetching analytics data for cycle summary...");
-
-        // For cost calculation, we need to know the slab rates.
-        // This example assumes we use the *currently active* slab rates to re-calculate historical costs.
-        // A more complex implementation could snapshot slab rates with each billing cycle.
         const activeSlabConfig = await SlabRateConfig.findOne({ isCurrentlyActive: true });
         if (!activeSlabConfig) {
-            // If no active slabs, we can still return consumption data without cost.
             console.warn("No active slab configuration found. Analytics will not include cost data.");
         }
 
         const cycleData = await Reading.aggregate([
-            // Stage 1: Lookup billing cycle information for each reading
-            {
-                $lookup: {
-                    from: 'billingcycles', // The actual collection name in MongoDB (plural, lowercase)
-                    localField: 'billingCycle',
-                    foreignField: '_id',
-                    as: 'cycleInfo'
-                }
-            },
-            // Stage 2: Deconstruct the cycleInfo array field from the input documents to output a document for each element.
-            {
-                $unwind: '$cycleInfo'
-            },
-            // Stage 3: Filter for readings that belong to 'closed' cycles only
-            {
-                $match: {
-                    'cycleInfo.status': 'closed'
-                }
-            },
-            // Stage 4: Group documents by billingCycle to calculate total consumption
-            {
-                $group: {
-                    _id: '$billingCycle', // Group by the billingCycle's ID
-                    totalConsumption: { $sum: '$unitsConsumedSincePrevious' },
-                    // Get the cycle details from the first document in each group
-                    startDate: { $first: '$cycleInfo.startDate' },
-                    endDate: { $first: '$cycleInfo.endDate' }
-                }
-            },
-            // Stage 5: Sort the results by start date to get a chronological view
-            {
-                $sort: {
-                    startDate: 1 // 1 for ascending order
-                }
-            }
+            { $lookup: { from: 'billingcycles', localField: 'billingCycle', foreignField: '_id', as: 'cycleInfo' } },
+            { $unwind: '$cycleInfo' },
+            { $match: { 'cycleInfo.status': 'closed' } },
+            { $group: { _id: '$billingCycle', totalConsumption: { $sum: '$unitsConsumedSincePrevious' }, startDate: { $first: '$cycleInfo.startDate' }, endDate: { $first: '$cycleInfo.endDate' } } },
+            { $sort: { startDate: 1 } }
         ]);
         
-        // Stage 6 (in application code): Calculate cost for each cycle and format the data
         const analyticsData = cycleData.map(cycle => {
-            const totalCost = activeSlabConfig 
-                ? calculateCostForConsumption(cycle.totalConsumption, activeSlabConfig) 
-                : 0;
-            
+            const totalCost = activeSlabConfig ? calculateCostForConsumption(cycle.totalConsumption, activeSlabConfig) : 0;
             return {
                 id: cycle._id,
-                // Create a user-friendly label for the chart
                 name: `${formatDate(cycle.startDate)} - ${formatDate(cycle.endDate)}`,
                 totalConsumption: parseFloat(cycle.totalConsumption.toFixed(2)),
                 totalCost: totalCost
@@ -97,6 +57,66 @@ exports.getCycleSummary = async (req, res) => {
 
     } catch (error) {
         console.error("Error fetching cycle analytics:", error);
+        res.status(500).json({ message: "Server error while fetching analytics data." });
+    }
+};
+
+// --- NEW FUNCTION ADDED ---
+// @desc    Get consumption data per meter, per cycle (for the new stacked bar chart)
+// @route   GET /api/analytics/meter-breakdown
+exports.getMeterBreakdownByCycle = async (req, res) => {
+    try {
+        console.log("Fetching analytics data for meter breakdown...");
+
+        const meterBreakdownData = await Reading.aggregate([
+            { $lookup: { from: 'billingcycles', localField: 'billingCycle', foreignField: '_id', as: 'cycleInfo' } },
+            { $unwind: '$cycleInfo' },
+            { $match: { 'cycleInfo.status': 'closed' } },
+            { $lookup: { from: 'meters', localField: 'meter', foreignField: '_id', as: 'meterInfo' } },
+            { $unwind: '$meterInfo' },
+            {
+                $group: {
+                    _id: {
+                        cycleId: '$billingCycle',
+                        meterId: '$meter',
+                        meterName: '$meterInfo.name',
+                        cycleStartDate: '$cycleInfo.startDate',
+                        cycleEndDate: '$cycleInfo.endDate'
+                    },
+                    totalConsumption: { $sum: '$unitsConsumedSincePrevious' }
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id.cycleId',
+                    startDate: { $first: '$_id.cycleStartDate' },
+                    endDate: { $first: '$_id.cycleEndDate' },
+                    meterConsumptions: {
+                        $push: {
+                            meterId: '$_id.meterId',
+                            meterName: '$_id.meterName',
+                            consumption: '$totalConsumption'
+                        }
+                    }
+                }
+            },
+            { $sort: { startDate: 1 } }
+        ]);
+
+        const formattedData = meterBreakdownData.map(cycle => {
+            const cycleName = `${formatDate(cycle.startDate)} - ${formatDate(cycle.endDate)}`;
+            const chartObject = { name: cycleName };
+            cycle.meterConsumptions.forEach(meter => {
+                chartObject[meter.meterName] = parseFloat(meter.consumption.toFixed(2));
+            });
+            return chartObject;
+        });
+
+        console.log(`Successfully aggregated meter breakdown for ${formattedData.length} cycles.`);
+        res.status(200).json(formattedData);
+
+    } catch (error) {
+        console.error("Error fetching meter breakdown analytics:", error);
         res.status(500).json({ message: "Server error while fetching analytics data." });
     }
 };
